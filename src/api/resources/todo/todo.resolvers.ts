@@ -1,6 +1,7 @@
 import { PubSub, withFilter } from 'graphql-subscriptions';
 
 import { getAuthenticated, helmet, IContext } from '../../../utils';
+import { Forbidden, NotFound } from '../../responses';
 import User from '../user/user.connector';
 import IUser from '../user/user.interface';
 import Todo from './todo.connector';
@@ -18,36 +19,56 @@ const todoResolvers = {
             return todos
         }),
         Todo: helmet(async (_, { _id }, context: IContext) => {
-            // Comment out the below code to add authentication
-            // const userId = getAuthenticated(context)
-            const instance = new Todo()
-            const todo = await instance.findOne<ITodo>(_id)
-            return todo
+            try {
+                // Comment out the below code to add authentication
+                // const userId = getAuthenticated(context)
+                const instance = new Todo()
+                const todo = await instance.findOne<ITodo>(_id)
+                return todo
+            } catch (err) {
+                if (err.path) {
+                    throw new NotFound()
+                } else {
+                    throw err
+                }
+            }
         }),
     },
     Mutation: {
         createTodo: helmet(async (_, args, context: IContext) => {
-            const userId = getAuthenticated(context)
-            args.userId = userId
+            try {
+                const userId = getAuthenticated(context)
+                args.userId = userId
 
-            const instance = new Todo()
-            const todo = await instance.create<ITodo>(args)
+                const instance = new Todo()
+                const todo = await instance.create<ITodo>(args)
 
-            /**
-             * TODO: This should probably be published to either
-             * a general room or a particular unique reference
-             */
-            pubsub.publish('newTodo', { newTodo: todo, channelId: 2 })
-
-            return todo
+                /**
+                 * TODO: This should probably be published to either
+                 * a general room or a particular unique reference
+                 */
+                pubsub.publish('newTodo', { newTodo: todo, channelId: 2 })
+                return todo
+            } catch (err) {
+                // TODO: find a way to check for specific error thrown
+                if (err.path) {
+                    throw new Forbidden()
+                } else {
+                    throw err
+                }
+            }
         }),
     },
     Todo: {
         // Fetch the postedBy if requested by the client
         postedBy: async (parent, __, context: IContext) => {
-            const instance = new User()
-            const user = await instance.findOne<IUser>(parent.postedBy)
-            return user
+            try {
+                const instance = new User()
+                const user = await instance.findOne<IUser>(parent.postedBy)
+                return user
+            } catch (err) {
+                throw new NotFound()
+            }
         },
     },
     Subscription: {

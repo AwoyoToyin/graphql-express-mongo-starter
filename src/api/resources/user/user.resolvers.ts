@@ -1,14 +1,18 @@
 import { helmet, IContext } from '../../../utils';
-import { BadRequest, WrongCredentials } from '../../responses';
+import { BadRequest, NotFound, WrongCredentials } from '../../responses';
 import User from './user.connector';
 import IUser from './user.interface';
 
 const userResolvers = {
     Query: {
         users: helmet(async (parent, args, context: IContext) => {
-            const instance = new User()
-            const users = await instance.find<IUser>()
-            return users
+            try {
+                const instance = new User()
+                const users = await instance.find<IUser>()
+                return users
+            } catch (err) {
+                throw new NotFound()
+            }
         }),
     },
     Mutation: {
