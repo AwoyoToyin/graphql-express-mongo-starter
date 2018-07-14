@@ -67,12 +67,19 @@ mutation {
 
 Create Todo
 ```
-mutation {
-  createTodo(
-    content: "Do you know the way?"
-  ) {
-    _id,
+mutation createTodo($input: CreateTodoInput!) {
+  createTodo(input: $input) {
+    _id
     content
+    createdAt
+    updatedAt
+  }
+}
+
+### Query Variables
+{
+  "input": {
+    "content": "My first todo item"
   }
 }
 
@@ -84,15 +91,18 @@ HTTP HEADERS
 
 Update Todo
 ```
-mutation {
-  updateTodo(
-    {
-        _id: "5a6437d5cacbed9e62630e13",
-        content: "Some todo item updated"
-    }
-  ) {
-    _id,
+mutation updateTodo($input: UpdateTodoInput!) {
+  updateTodo(input: $input) {
+    _id
     content
+  }
+}
+
+### Query Variables
+{
+  "input": {
+    _id: "5a6437d5cacbed9e62630e13",
+    "content": "My first todo item edited"
   }
 }
 
