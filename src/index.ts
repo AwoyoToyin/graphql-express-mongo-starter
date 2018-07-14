@@ -1,3 +1,4 @@
+import { formatError } from 'apollo-errors';
 import { graphiqlExpress, graphqlExpress } from 'apollo-server-express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
@@ -47,6 +48,7 @@ server.use('/graphiql', graphiqlExpress({
 }));
 
 server.use('/graphql', bodyParser.json(), graphqlExpress((request) => ({
+    formatError,
     schema,
     context: () => ({
         request,

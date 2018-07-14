@@ -1,4 +1,5 @@
 import { helmet, IContext } from '../../../utils';
+import { BadRequest, WrongCredentials } from '../../responses';
 import User from './user.connector';
 import IUser from './user.interface';
 
@@ -16,14 +17,22 @@ const userResolvers = {
             // return user.save()
         }),
         signup: helmet(async (_, { input }, context: IContext) => {
-            const instance = new User()
-            const user = await instance.signup<IUser>(input)
-            return user
+            try {
+                const instance = new User()
+                const user = await instance.signup<IUser>(input)
+                return user
+            } catch (err) {
+                throw new BadRequest()
+            }
         }),
         login: helmet(async (_, { username, password }, context: IContext) => {
-            const instance = new User()
-            const user = await instance.login<IUser>(username, password)
-            return user
+            try {
+                const instance = new User()
+                const user = await instance.login<IUser>(username, password)
+                return user
+            } catch (err) {
+                throw new WrongCredentials()
+            }
         }),
     },
 
